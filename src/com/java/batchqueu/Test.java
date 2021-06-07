@@ -20,6 +20,8 @@ public class Test {
             batch.push("5");
             batch.push("6");
             batch.push("7");
+            batch.push("8");
+            batch.push("9");
             Thread.sleep(500);
         }
     }
