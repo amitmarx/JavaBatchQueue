@@ -5,6 +5,7 @@ import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+//dummy commit for cr
 public class BatchQueue<T> implements AutoCloseable {
     private final ArrayBlockingQueue<T> queue;
     private final Consumer<ArrayList<T>> callback;
