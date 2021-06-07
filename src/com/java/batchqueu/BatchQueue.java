@@ -11,6 +11,7 @@ public class BatchQueue<T> implements AutoCloseable {
     private final AtomicBoolean isCleanInProcess = new AtomicBoolean(false);
     private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor();
     private final ExecutorService callbackExecution = Executors.newSingleThreadExecutor();
+    private final ExecutorService pushExecution = Executors.newFixedThreadPool(10);
 
 
     public BatchQueue(int sizeLimit, long timeLimit, Consumer<ArrayList<T>> callback) {
@@ -26,8 +27,10 @@ public class BatchQueue<T> implements AutoCloseable {
     public void push(T item) {
         boolean isAdded = queue.offer(item);
         if (!isAdded) {
-            cleanQueueIfNeeded(false);
-            this.push(item);
+            pushExecution.submit(() -> {
+                cleanQueueIfNeeded(false);
+                this.push(item);
+            });
         }
     }
 
