@@ -52,5 +52,6 @@ public class BatchQueue<T> implements AutoCloseable {
     public void close() {
         this.scheduleExecutor.shutdown();
         this.callbackExecution.shutdown();
+        this.pushExecution.shutdown();
     }
 }
