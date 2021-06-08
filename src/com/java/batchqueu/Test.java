@@ -6,20 +6,18 @@ public class Test {
 
     public static void main(String[] args) throws InterruptedException {
         try (
-                BatchQueue<String> batch = new BatchQueue<>(4, 100, items -> {
+                BatchQueue<String> batch = new BatchQueue<>(4, 1, items -> {
+                    if(items.size()==0){
+                        System.out.println("ZEROOOO");
+                    }
                     System.out.println(Arrays.toString(items.toArray()));
                     System.out.println("=================");
                 })
         ) {
 
-            batch.push("1");
-            batch.push("2");
-            Thread.sleep(90);
-            batch.push("3");
-            batch.push("4");
-            batch.push("5");
-            batch.push("6");
-            batch.push("7");
+            for (int i =0; i<10000; i++){
+                batch.push(Integer.toString(i));
+            }
             Thread.sleep(500);
         }
     }
