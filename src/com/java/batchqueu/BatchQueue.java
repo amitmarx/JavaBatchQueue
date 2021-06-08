@@ -9,24 +9,20 @@ public class BatchQueue<T> implements AutoCloseable {
     private final Consumer<ArrayList<T>> callback;
     private final AtomicBoolean isCleanInProcess = new AtomicBoolean(false);
     private final ScheduledExecutorService scheduleExecutor = Executors.newSingleThreadScheduledExecutor();
-    private final ExecutorService callbackExecution = Executors.newFixedThreadPool(5);
-    private final ConcurrentLinkedQueue<T> queue = new ConcurrentLinkedQueue<T>();
+    private final ExecutorService callbackExecutor = Executors.newFixedThreadPool(5);
+    private final ConcurrentLinkedQueue<T> queue = new ConcurrentLinkedQueue<>();
     private final int sizeLimit;
     private final int overflow;
 
 
-    public BatchQueue(int sizeLimit, long timeLimit, Consumer<ArrayList<T>> callback) {
-        this(sizeLimit, timeLimit, sizeLimit * 3, callback);
-    }
-
-    public BatchQueue(int sizeLimit, long timeLimit, int overflow, Consumer<ArrayList<T>> callback) {
-        this.sizeLimit = sizeLimit;
-        this.overflow = overflow;
+    public BatchQueue(int batchSize, long timeLimitInMillis, Consumer<ArrayList<T>> callback) {
+        this.sizeLimit = batchSize;
+        this.overflow = batchSize * 3;
         this.callback = callback;
         this.scheduleExecutor.scheduleAtFixedRate(
                 () -> this.processBatchIfNeeded(true),
-                timeLimit,
-                timeLimit,
+                timeLimitInMillis,
+                timeLimitInMillis,
                 TimeUnit.MILLISECONDS);
     }
 
@@ -72,7 +68,7 @@ public class BatchQueue<T> implements AutoCloseable {
 
         if (batch != null && batch.size() > 0) {
             ArrayList<T> finalBatch = batch;
-            callbackExecution.submit(() -> this.callback.accept(finalBatch));
+            callbackExecutor.submit(() -> this.callback.accept(finalBatch));
 
             if (isBatchReady()) {
                 this.processBatchIfNeeded(false);
@@ -83,6 +79,6 @@ public class BatchQueue<T> implements AutoCloseable {
     @Override
     public void close() {
         this.scheduleExecutor.shutdown();
-        this.callbackExecution.shutdown();
+        this.callbackExecutor.shutdown();
     }
 }
